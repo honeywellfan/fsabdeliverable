@@ -1,95 +1,98 @@
+"use client";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { useState, useEffect } from "react";
+import { Timestamp } from "firebase/firestore";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  async function newlog() {
+    const logdeets = {
+      title,
+      author,
+      datesread,
+      timeread,
+    };
+    const res = await fetch("http://localhost:8080/test", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(logdeets),
+    });
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    const [title, setTitle] = useState("")
+    const [author, setAuthor] = useState("");
+    const [datesread, setDatesRead] = useState("");
+    const [timeread, setTimeRead] = useState("");
+
+  }
+  const [bologs, setbologs] = useState([]);
+  async function fetchy() {
+    const res = await fetch("http://localhost:8080/test", {
+      method: "GET",
+    });
+    const data = await res.json();
+    setbologs(data);
+  }
+
+  function enter() {
+    newlog();
+    // fetchy();
+  }
+  useEffect(() => {
+    fetchy();
+  }, []);
+  return (
+    <div>
+      <div className="headertable">
+        <h1>Book Logger:</h1>
+        <table id="table1">
+          <tbody>
+            <tr key={"toprow"}>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Dates/Times Read</th>
+              <th>Total Time Read (Hours)</th>
+            </tr>
+            {bologs.map((bolog) => (
+              <tr key={bolog.title}>
+                <td>{bolog.title}</td>
+                <td>{bolog.author}</td>
+                {/* firebase.firestore.Timestamp.toDate() */}
+                {/* .toDate().toDateString().join(", ") */}
+                <td>
+                  {new Timestamp(
+                    bolog.datesread.seconds,
+                    bolog.datesread.nanoseconds
+                  )
+                    .toDate()
+                    .toDateString()}
+                </td>
+                <td>{bolog.timeread}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="input">
+        <label>Title</label>
+        <br></br>
+        <input></input>
+        <br></br>
+        <label>Author</label>
+        <br></br>
+        <input></input>
+        <br></br>
+        <label>Date Read</label>
+        <br></br>
+        <input type="date"></input>
+        <br></br>
+        <label>Hour(s) Read</label>
+        <br></br>
+        <input type="number" min={1}></input>
+        <br></br>
+        <input type="button" value="Submit New Log" onClick={enter()}></input>
+      </div>
     </div>
   );
 }
